@@ -1,0 +1,1197 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DE Delivery Unit Economics Model</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
+  <style>
+    :root {
+      --primary-green: #2cc700;
+      --primary-black: #000000;
+      --secondary-white: #ffffff;
+      --secondary-gray: #949494;
+      --light-gray: #f2f2f2;
+    }
+
+    body {
+      background-color: var(--light-gray);
+      color: var(--primary-black);
+      font-family: Arial, Helvetica, sans-serif;
+      margin: 0;
+    }
+
+    input[type="number"],
+    select {
+      display: block;
+      width: 100%;
+      border-radius: 0.375rem;
+      border: 1px solid #d1d5db;
+      box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+      padding: 0.75rem;
+      font-weight: 700;
+      font-size: 0.875rem;
+      line-height: 1.25rem;
+      background-color: var(--secondary-white);
+    }
+
+    input[type="number"]:focus,
+    select:focus {
+      outline: 2px solid transparent;
+      outline-offset: 2px;
+      border-color: #22c55e;
+      box-shadow: 0 0 0 3px rgb(34 197 94 / 0.2);
+    }
+
+    .section-card {
+      background: white;
+      padding: 1.5rem;
+      border-radius: 0.75rem;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+      border-bottom: 4px solid black;
+      margin-bottom: 1.5rem;
+    }
+
+    .label-text {
+      display: block;
+      font-size: 0.875rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+      text-transform: uppercase;
+      letter-spacing: -0.03em;
+      color: black;
+    }
+
+    .explanation-box {
+      font-size: 11px;
+      color: #949494;
+      margin-top: 1rem;
+      padding: 0.75rem;
+      background: #f9fafb;
+      border-radius: 0.375rem;
+      line-height: 1.5;
+      border-left: 2px solid #e5e7eb;
+    }
+
+    .wizard-step {
+      display: none;
+    }
+
+    .wizard-step.active {
+      display: block;
+      animation: fadeIn 0.4s ease-out;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: scale(0.98);
+      }
+      to {
+        opacity: 1;
+        transform: scale(1);
+      }
+    }
+
+    .btn-primary {
+      background-color: var(--primary-green);
+      color: white;
+      padding: 0.75rem 2rem;
+      border-radius: 0.5rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      transition: opacity 0.2s ease, transform 0.2s ease;
+      box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+      border: none;
+      cursor: pointer;
+    }
+
+    .btn-primary:hover {
+      opacity: 0.9;
+    }
+
+    .btn-outline {
+      border: 2px solid black;
+      padding: 0.5rem 1.5rem;
+      border-radius: 0.5rem;
+      font-weight: 700;
+      background: white;
+      color: black;
+      transition: background-color 0.2s ease, color 0.2s ease;
+      cursor: pointer;
+    }
+
+    .btn-outline:hover {
+      background: black;
+      color: white;
+    }
+
+    .metric-label {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      color: #9ca3af;
+      font-weight: 700;
+    }
+
+    .metric-value {
+      font-size: 1.5rem;
+      font-family: Arial, Helvetica, sans-serif;
+      font-weight: 700;
+    }
+
+    .formula-section {
+      border: 1px solid #e5e7eb;
+      border-radius: 1rem;
+      padding: 1rem;
+      background: #ffffff;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+    }
+
+    .formula-section-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.75rem;
+      margin-bottom: 0.75rem;
+      padding-bottom: 0.75rem;
+      border-bottom: 1px solid #f1f5f9;
+    }
+
+    .formula-section-title {
+      font-size: 0.95rem;
+      font-weight: 800;
+      color: #111827;
+    }
+
+    .formula-section-value {
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: 0.9rem;
+      font-weight: 800;
+      color: #000;
+    }
+
+    .formula-section-note {
+      font-size: 0.74rem;
+      line-height: 1.5;
+      color: #6b7280;
+      margin-bottom: 0.9rem;
+    }
+
+    .formula-inputs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+      margin-bottom: 0.8rem;
+    }
+
+    .formula-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      background: #f3f4f6;
+      border: 1px solid #e5e7eb;
+      border-radius: 9999px;
+      padding: 0.28rem 0.55rem;
+      font-size: 0.68rem;
+      font-weight: 800;
+      color: #374151;
+      line-height: 1;
+    }
+
+    .formula-chip-value {
+      font-family: Arial, Helvetica, sans-serif;
+      color: #000;
+    }
+
+    .formula-step {
+      border: 1px solid #eef2f7;
+      border-radius: 0.75rem;
+      padding: 0.8rem;
+      background: #fafafa;
+      margin-bottom: 0.65rem;
+    }
+
+    .formula-step:last-child {
+      margin-bottom: 0;
+    }
+
+    .formula-kicker {
+      font-size: 0.625rem;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #6b7280;
+      margin-bottom: 0.35rem;
+    }
+
+    .formula-title {
+      font-size: 0.92rem;
+      font-weight: 800;
+      color: #111827;
+      margin-bottom: 0.25rem;
+    }
+
+    .formula-line {
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: 0.78rem;
+      color: #374151;
+      line-height: 1.5;
+      word-break: break-word;
+    }
+
+    .formula-impact {
+      margin-top: 0.45rem;
+      font-size: 0.72rem;
+      line-height: 1.45;
+      color: #6b7280;
+    }
+
+    .formula-result {
+      margin-top: 0.5rem;
+      font-weight: 800;
+      color: #000;
+    }
+
+    .formula-final {
+      border-color: #d1fae5;
+      background: #f0fdf4;
+    }
+  </style>
+</head>
+<body class="font-sans">
+  <div id="wizardOverlay" class="fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
+    <div class="bg-white max-w-2xl w-full rounded-2xl shadow-2xl overflow-hidden border-t-8 border-[#2cc700]">
+      <div class="p-8">
+        <div class="flex justify-between items-center mb-8">
+          <h2 class="text-3xl font-black uppercase tracking-tighter">Setup</h2>
+          <span id="stepIndicator" class="text-sm font-bold text-white bg-black px-4 py-1 rounded-full italic">Step 1/4</span>
+        </div>
+
+        <div id="step1" class="wizard-step active">
+          <h3 class="text-xl font-bold mb-6 border-b-2 border-green-500 pb-2">Bestell-Grundlagen</h3>
+          <div class="space-y-6">
+            <div>
+              <label class="label-text" for="wiz_aov">Warenkorb (EUR)</label>
+              <input type="number" id="wiz_aov" value="45.00" step="1" />
+              <div class="explanation-box">
+                Der Warenkorbwert beschreibt den Bruttowert der in einer Bestellung enthaltenen Produkte. Für den deutschen Markt liegen typische Orientierungswerte im E-Food je nach Geschäftsmodell bei etwa 85,00 EUR bis 95,00 EUR im Vollsortiment sowie bei etwa 35,00 EUR bis 50,00 EUR im Quick-Commerce. Der Wert ist ein zentraler Ergebnishebel, da sich zahlreiche operative Kosten nur begrenzt proportional zum Warenkorb entwickeln.
+              </div>
+            </div>
+            <div>
+              <label class="label-text" for="wiz_has_fee">Liefergebühr (EUR)</label>
+              <div class="flex gap-2">
+                <select id="wiz_has_fee" class="w-1/3" onchange="toggleFeeInput()">
+                  <option value="no">Kostenlos</option>
+                  <option value="yes" selected>Bezahlt</option>
+                </select>
+                <input type="number" id="wiz_fee_val" value="3.50" step="0.1" class="w-2/3" />
+              </div>
+              <div class="explanation-box">
+                Die Liefergebühr stellt einen zusätzlichen Erlösbeitrag je Bestellung dar und dient insbesondere der anteiligen Deckung von Logistik- und Zustellkosten. Im Markt werden hierfür häufig differenzierte Preismodelle eingesetzt, etwa nach Warenkorbhöhe, Lieferfenster oder Servicelevel.
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div id="step2" class="wizard-step">
+          <h3 class="text-xl font-bold mb-6 border-b-2 border-green-500 pb-2">Produkttyp &amp; Logistik-Impact</h3>
+          <div class="space-y-6">
+            <div>
+              <label class="label-text" for="wiz_frozen">Tiefkühlprodukte (TK) vorhanden?</label>
+              <select id="wiz_frozen">
+                <option value="no">Nein</option>
+                <option value="yes">Ja</option>
+              </select>
+              <div class="explanation-box">
+                Tiefkühlprodukte erfordern eine durchgängige Kühlkette. Dies erhöht typischerweise den Aufwand für Spezialverpackung, Energie, Kommissionierung und Hub-Betrieb und wirkt sich damit unmittelbar auf die Kostenstruktur je Bestellung aus.
+              </div>
+            </div>
+            <div>
+              <label class="label-text" for="wiz_drinks">Getränkekisten / Schwere Gebinde?</label>
+              <select id="wiz_drinks">
+                <option value="no">Nein</option>
+                <option value="yes">Ja</option>
+              </select>
+              <div class="explanation-box">
+                Schwere Gebinde reduzieren in der Regel die nutzbare Fahrzeugkapazität und erhöhen den operativen Zeitaufwand bei Zustellung und Handling. Dies kann die Toureneffizienz verringern und die erreichbaren Stops pro Stunde reduzieren.
+              </div>
+            </div>
+            <div>
+              <label class="label-text" for="wiz_deposit">Pfand-Rücknahme?</label>
+              <select id="wiz_deposit">
+                <option value="no">Nein</option>
+                <option value="yes">Ja</option>
+              </select>
+              <div class="explanation-box">
+                Die Rücknahme von Pfandgebinden erhöht den Zeitaufwand bei der Übergabe und beansprucht zusätzlich Kapazität im Fahrzeug. Beides kann die operative Effizienz der Tour messbar reduzieren.
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div id="step3" class="wizard-step">
+          <h3 class="text-xl font-bold mb-6 border-b-2 border-green-500 pb-2">Region</h3>
+          <div class="space-y-6">
+            <div>
+              <label class="label-text" for="wiz_city">Wähle deine Zielstadt:</label>
+              <select id="wiz_city" onchange="updateCityExplanation()">
+                <option value="berlin">Berlin</option>
+                <option value="munich">München</option>
+                <option value="hamburg">Hamburg</option>
+                <option value="ruhr">Ruhrgebiet</option>
+              </select>
+              <div id="city_explanation" class="explanation-box">
+                Berlin zeichnet sich durch eine hohe Kundendichte und vergleichsweise kurze Wege aus. Dies begünstigt die operative Effizienz, während der intensive Wettbewerb das ökonomische Potenzial einzelner Liefermodelle zugleich begrenzen kann.
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div id="step4" class="wizard-step">
+          <h3 class="text-xl font-bold mb-6 border-b-2 border-green-500 pb-2">Bereit für die Analyse?</h3>
+          <div class="space-y-4 text-gray-700 font-medium">
+            <p>Wir vergleichen nun deine Bestellung mit den folgenden Kostenblöcken:</p>
+            <ul class="list-disc list-inside text-sm space-y-1 ml-2">
+              <li>Direkte Warenkosten (Einkaufspreis)</li>
+              <li>Fulfillment (Lagerung, Energie, Kommissionierung)</li>
+              <li>Last-Mile Logistik (Lohn, Fahrzeug, Energie)</li>
+              <li>Marketing &amp; Akquise (CAC)</li>
+              <li>IT-Infrastruktur &amp; Verwaltung</li>
+            </ul>
+            <div class="bg-gray-100 p-4 rounded-lg border-l-4 border-black mt-4">
+              <p class="text-xs uppercase tracking-widest text-black">
+                <strong>Hinweis:</strong> Dies ist eine Modellrechnung basierend auf Marktannahmen. Reale Werte können durch individuelle Verträge und Skaleneffekte abweichen.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div class="flex justify-between mt-10">
+          <button id="prevBtn" onclick="moveStep(-1)" class="btn-outline hidden">Zurück</button>
+          <button id="nextBtn" onclick="moveStep(1)" class="btn-primary ml-auto">Weiter</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="mainContent" class="max-w-7xl mx-auto px-4 py-8 opacity-10 pointer-events-none transition-all duration-700">
+    <header class="mb-10 flex flex-col md:flex-row md:items-end justify-between gap-6 border-b-4 border-[#2cc700] pb-6">
+      <div>
+        <h1 class="text-5xl font-black uppercase tracking-tighter">Profitabilität von Lebensmittellieferungen</h1>
+        <p class="text-green-600 font-bold tracking-widest uppercase text-sm">Modellrechnung für den deutschen Markt</p>
+      </div>
+    </header>
+
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+      <div class="lg:col-span-8 space-y-8">
+        <div class="section-card">
+          <div class="flex items-center gap-3 mb-6">
+            <div class="bg-black text-green-500 w-10 h-10 flex items-center justify-center font-black text-xl rounded">A</div>
+            <h2 class="text-2xl font-black uppercase">Bestell-Ökonomie</h2>
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div>
+              <label class="label-text" for="aov">Warenkorb (EUR)</label>
+              <input type="number" id="aov" value="45.00" step="0.5" oninput="handleAovInput()" />
+              <div class="explanation-box">Der Warenkorbwert ist einer der zentralen Erlöshebel des Modells, da sich zahlreiche operative Kosten je Bestellung nur begrenzt proportional entwickeln. Für den deutschen Markt liegen schnelle Sofortlieferungen häufig eher im Bereich von etwa 35 bis 50 EUR, während größere E-Food- oder Wocheneinkäufe häufig in Richtung 80 bis 100 EUR tendieren. Ein höherer Warenkorb verbessert das Ergebnis in der Regel deutlich, sofern Wareneinsatz und Servicekosten nicht überproportional ansteigen.</div>
+            </div>
+            <div>
+              <label class="label-text" for="revenue_add">Liefergebühr (EUR)</label>
+              <input type="number" id="revenue_add" value="3.50" step="0.1" oninput="calculate()" />
+              <div class="explanation-box">Die Liefergebühr stellt einen zusätzlichen Erlös pro Bestellung dar und wirkt damit grundsätzlich positiv auf Deckungsbeitrag und EBIT. Im deutschen Markt bewegen sich typische Gebühren je nach Serviceversprechen häufig in einer Größenordnung von etwa 0 bis 5 EUR; für Express- oder Peak-Slots können auch höhere Werte relevant sein. Eine Anpassung verbessert das Ergebnis unmittelbar, kann jedoch Nachfrage, Conversion oder Bestellfrequenz beeinflussen.</div>
+            </div>
+            <div>
+              <label class="label-text" for="cogs_pct">Wareneinsatz (COGS %)</label>
+              <input type="number" id="cogs_pct" value="85" step="1" oninput="calculate()" />
+              <div class="explanation-box">Der Wareneinsatz beschreibt den Anteil des Warenkorbwerts, der auf den Beschaffungswert der verkauften Waren entfällt. Für deutsche Supermarktmodelle ist ein Bereich von etwa 80 bis 90 Prozent des Warenkorbs als plausible Annahme anzusehen. Öffentliche Vergleichswerte liegen bei rund 89,7 Prozent für EDEKA 2024 und rund 79,8 Prozent für Kaufland 2023/2024. Eine Erhöhung dieses Werts wirkt sich regelmäßig deutlich negativ auf das Ergebnis aus, da der Wareneinsatz meist den größten Einzelkostenblock darstellt.</div>
+            </div>
+            <div>
+              <label class="label-text" for="packaging">Verpackung (EUR)</label>
+              <input type="number" id="packaging" value="0.39" step="0.01" oninput="calculate()" />
+              <div class="explanation-box">Dieses Feld erfasst die variablen Verpackungskosten je Bestellung, beispielsweise für Tragetaschen, Isoliermaterial oder Kartonagen. Als Default-Wert werden 0,39 EUR angesetzt; dieser Wert orientiert sich an marktüblichen Modellannahmen. Zum Vergleich erhebt REWE bei seinem Lieferdienst 0,50 EUR Pfand pro Tasche, wobei es sich um ein kundenfinanziertes Pfandsystem und nicht um einen unmittelbaren Kostenwert handelt. Höhere Verpackungskosten wirken sich unmittelbar ergebnisbelastend aus.</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="section-card">
+          <div class="flex items-center gap-3 mb-6">
+            <div class="bg-black text-green-500 w-10 h-10 flex items-center justify-center font-black text-xl rounded">B</div>
+            <h2 class="text-2xl font-black uppercase">Fulfillment</h2>
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div>
+              <label class="label-text" for="fulfillment_model">Fulfillment-Modell</label>
+              <select id="fulfillment_model" onchange="updateFulfillmentExplanation(); updatePickingTimeFromInputs(); calculate()">
+                <option value="manual_store">Manuelles Store-Picking</option>
+                <option value="dark_store" selected>Dark-Store-ähnlich</option>
+                <option value="automated_fc">Stark automatisiertes FC</option>
+              </select>
+              <div id="fulfillment_explanation" class="explanation-box">Das gewählte Fulfillment-Modell bestimmt insbesondere, wie stark die Kommissionierzeit mit zunehmendem Warenkorb ansteigt. Beim manuellen Store-Picking liegen Richtwerte bei etwa 2,5 bis 3,0 Minuten je zusätzlicher 10 EUR Warenkorb, bei Dark-Store-ähnlichen Konzepten bei etwa 1,8 bis 2,3 Minuten und bei stark automatisierten Fulfillment-Centern nur bei etwa 0,2 bis 0,3 Minuten. Für das Modell wird eine Baseline von 8,0 Minuten bei einem Warenkorb von 45 EUR zugrunde gelegt.</div>
+            </div>
+            <div>
+              <label class="label-text" for="picking_time">Picking-Zeit (Min)</label>
+              <input type="number" id="picking_time" value="8" step="0.1" oninput="handleManualPickingTimeInput()" />
+              <div id="picking_explanation" class="explanation-box">Die Kommissionierzeit bestimmt die personalbezogenen Fulfillment-Kosten je Bestellung. Ausgangspunkt sind 8,0 Minuten bei einem Warenkorb von 45 EUR; der tatsächliche Wert wird in Abhängigkeit vom Fulfillment-Modell sowie vom Produktmix fortgeschrieben. Zusätzliche Minuten erhöhen die operativen Kosten unmittelbar und belasten damit EBIT und Marge.</div>
+            </div>
+            <div>
+              <label class="label-text" for="warehouse_fixed">Lager-Overhead (EUR)</label>
+              <input type="number" id="warehouse_fixed" value="1.20" step="0.1" oninput="calculate()" />
+              <div class="explanation-box">Dieses Feld bündelt standortbezogene Gemeinkosten auf Bestellebene, etwa für Miete, Energie, Kühlung, Abschreibungen, Inbound-Prozesse und Flächenbetrieb. Für deutsche Modelle sind Richtwerte von etwa 0,80 bis 2,50 EUR pro Bestellung häufig plausibel, abhängig von Standort, Hub-Auslastung und Kühlanteil. Bei sinkender Auslastung steigt dieser Kostenblock pro Bestellung in der Regel spürbar an.</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="section-card">
+          <div class="flex items-center gap-3 mb-6">
+            <div class="bg-black text-green-500 w-10 h-10 flex items-center justify-center font-black text-xl rounded">C</div>
+            <h2 class="text-2xl font-black uppercase">Logistik</h2>
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="md:col-span-3">
+              <label class="label-text" for="delivery_mode">Liefermodus</label>
+              <select id="delivery_mode" onchange="toggleDeliveryModeFields(); calculate()">
+                <option value="human" selected>Fahrer / Kurier</option>
+                <option value="autonomous">Autonomes Fahrzeug</option>
+              </select>
+              <div class="explanation-box">Hier wird festgelegt, ob die letzte Meile personalbasiert oder mit einem autonomen Fahrzeug modelliert wird. Im klassischen Fahrermodell prägen insbesondere Lohnkosten, Arbeitgeberanteile und Produktivität pro Stunde die Wirtschaftlichkeit. Im autonomen Szenario entfallen diese Personalkosten weitgehend, während zusätzliche Aufwendungen für Fahrzeugtechnik, Monitoring, Software, Sicherheit, Energie und Betrieb anfallen. Die gewählte Option beeinflusst damit sowohl die Kostenstruktur als auch die operative Leistungsfähigkeit der Zustellung.</div>
+            </div>
+
+            <div id="humanFields">
+              <label class="label-text" for="wage">Lohn (EUR/h)</label>
+              <input type="number" id="wage" value="16.06" step="0.01" oninput="calculate()" />
+              <div class="explanation-box">Erfasst wird der Brutto-Stundenlohn der eingesetzten operativen Mitarbeitenden vor Arbeitgebernebenkosten. Als Modellkorridor werden Werte zwischen 14,61 EUR und 17,50 EUR pro Stunde angesetzt; als Default dient der Mittelwert von 16,06 EUR, da die im Modell betrachteten Städte beim Lohnniveau nicht stark differenziert werden sollen. Höhere Lohnkosten erhöhen sowohl Zustell- als auch Fulfillment-Kosten.</div>
+            </div>
+            <div>
+              <label class="label-text" for="dph">Drops pro Stunde</label>
+              <input type="number" id="dph" value="2.2" step="0.1" oninput="handleManualDphInput()" />
+              <div class="explanation-box" id="dph_explanation">Die Kennzahl „Drops pro Stunde“ beschreibt, wie viele Bestellungen eine Zustelleinheit innerhalb einer Stunde erfolgreich ausliefern kann. Für deutsche Stadtgebiete ist ein Modellkorridor von etwa 1,8 bis 3,0 Drops pro Stunde plausibel, abhängig von Bevölkerungsdichte, Wegezeiten, Parkdruck, Gebäudestruktur, Übergabeaufwand und Tourenqualität. Das gewählte Liefergebiet wirkt unmittelbar auf diese Produktivität: verdichtete urbane Gebiete wie Berlin ermöglichen häufig mehr Stopps pro Stunde, während zersiedelte Regionen wie das Ruhrgebiet tendenziell längere Fahrzeiten verursachen. Eine höhere DPH reduziert die Zustellkosten je Bestellung, da sich die stündlichen Kosten auf mehr Lieferungen verteilen.</div>
+            </div>
+            <div id="humanSocialField">
+              <label class="label-text" for="social_sec">SV-Beiträge (%)</label>
+              <input type="number" id="social_sec" value="21" step="1" oninput="calculate()" />
+              <div class="explanation-box">Hier werden die Arbeitgeberanteile zur Sozialversicherung auf den Bruttolohn aufgeschlagen. Für Deutschland ist im Modell häufig eine Größenordnung von rund 20 bis 23 Prozent plausibel, abhängig unter anderem von Kassenstruktur, Umlagen und individuellen Rahmenbedingungen. Höhere Arbeitgeberanteile erhöhen die effektiven Arbeitskosten je Stunde und belasten damit direkt die Zustellkosten je Bestellung.</div>
+            </div>
+
+            <div id="autonomousFields" class="md:col-span-3 hidden">
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div>
+                  <label class="label-text" for="autonomous_dph_delta">AV-DPH-Effekt (Delta)</label>
+                  <input type="number" id="autonomous_dph_delta" value="0.0" step="0.1" oninput="applyDeliveryModeDphAdjustment(); calculate()" />
+                  <div class="explanation-box">Für autonome Lieferfahrzeuge kann derzeit kein pauschaler Produktivitätsgewinn in Form höherer Drops pro Stunde als belastbar gesichert angenommen werden. Daher ist dieser Parameter im Modell standardmäßig auf 0,0 gesetzt. Er bleibt bewusst editierbar, um Sensitivitätsanalysen hinsichtlich der Auswirkungen veränderter Zustellproduktivität auf die Zustellkosten zu ermöglichen.</div>
+                </div>
+                <div>
+                  <label class="label-text" for="remote_ops">AV-Safety / Monitoring (EUR/h)</label>
+                  <input type="number" id="remote_ops" value="8.00" step="0.1" oninput="calculate()" />
+                  <div class="explanation-box">Dieses Feld bildet die Kosten für Monitoring und Safety-Supervision pro aktivem autonomen Fahrzeug ab. Bei einer angenommenen Überwachungsrelation von etwa 5 bis 7 Fahrzeugen je Person sowie Arbeitskosten von 39,80 EUR pro Stunde ergibt sich ein Modellwert von rund 8,00 EUR je Fahrzeugstunde.</div>
+                </div>
+                <div>
+                  <label class="label-text" for="autonomous_vehicle_cost">AV-Fahrzeugkosten (EUR/h)</label>
+                  <input type="number" id="autonomous_vehicle_cost" value="6.50" step="0.1" oninput="calculate()" />
+                  <div class="explanation-box">Dieses Feld bündelt kapitalintensive Fahrzeugkosten, insbesondere für Leasing bzw. Abschreibung, Versicherung, Hardware und technische Reserve. Je höher dieser Kostenblock ausfällt, desto stärker müssen Produktivität oder Warenkorbwert steigen, damit das autonome Zustellszenario wirtschaftlich tragfähig bleibt.</div>
+                </div>
+                <div>
+                  <label class="label-text" for="charging_cost">AV-Energie (EUR/h)</label>
+                  <input type="number" id="charging_cost" value="1.85" step="0.01" oninput="calculate()" />
+                  <div class="explanation-box">Als Modellwert werden 1,85 EUR pro Stunde angesetzt. Dies entspricht jährlichen Ladekosten von rund 3.700 EUR bei einer Annahme von 2.000 aktiven Betriebsstunden pro Jahr für einen elektrischen Lieferwagen.</div>
+                </div>
+                <div>
+                  <label class="label-text" for="autonomous_software">AV-Software (EUR/h)</label>
+                  <input type="number" id="autonomous_software" value="3.00" step="0.1" oninput="calculate()" />
+                  <div class="explanation-box">Für strukturelle Softwarekosten wird ein Modellwert von 3,00 EUR pro Stunde verwendet. Dieser liegt innerhalb eines häufig genannten Korridors von etwa 2,50 bis 4,00 EUR pro Stunde und umfasst unter anderem Karten, Compute, Sensor-Stacks und Plattformbetrieb.</div>
+                </div>
+                <div>
+                  <label class="label-text" for="autonomous_service_fee">AV-Service / Wartung (EUR/h)</label>
+                  <input type="number" id="autonomous_service_fee" value="1.50" step="0.01" oninput="calculate()" />
+                  <div class="explanation-box">Dieses Feld bildet zusätzliche Service- und Wartungskosten ab, etwa für regelmäßige Check-ups, Error Tracking, Sensorreinigung und Rekalibrierung. Bei 3.000 EUR pro Jahr und 2.000 aktiven Betriebsstunden ergibt sich ein Modellwert von 1,50 EUR pro Stunde.</div>
+                </div>
+                <div>
+                  <label class="label-text" for="handover_cost">AV-Übergabe (EUR/Order)</label>
+                  <input type="number" id="handover_cost" value="0.76" step="0.01" oninput="calculate()" />
+                  <div class="explanation-box">Im AV-Szenario wird eine Curbside-Selbstabholung mit digitaler Entriegelung und kurzer unterstützender Interaktion angenommen. Eine Minute Support auf Basis von 39,80 EUR pro Stunde entspricht rund 0,66 EUR Arbeitskosten; zuzüglich 0,10 EUR für System-, Messaging- und Exception-Handling ergibt sich ein Modellwert von 0,76 EUR je Übergabe.</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="section-card">
+          <div class="flex items-center gap-3 mb-6">
+            <div class="bg-black text-green-500 w-10 h-10 flex items-center justify-center font-black text-xl rounded">D</div>
+            <h2 class="text-2xl font-black uppercase">Overhead</h2>
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div>
+              <label class="label-text" for="cac">CAC (Marketing) (EUR)</label>
+              <input type="number" id="cac" value="4.50" step="0.5" oninput="calculate()" />
+              <div class="explanation-box">Der CAC verteilt Marketing- und Promotionsaufwendungen auf eine einzelne Bestellung. In reifen Bestandskundensegmenten kann der effektive Wert vergleichsweise niedrig ausfallen, während stark rabattgetriebene Neukundenmodelle in Deutschland rasch in einen Bereich von etwa 3 bis 10 EUR pro Bestellung oder darüber gelangen können. Ein hoher CAC belastet die Marge unmittelbar, ohne die operative Leistungsfähigkeit zu erhöhen.</div>
+            </div>
+            <div>
+              <label class="label-text" for="it_cost">IT &amp; Payment (EUR)</label>
+              <input type="number" id="it_cost" value="0.80" step="0.1" oninput="calculate()" />
+              <div class="explanation-box">Dieses Feld bündelt Payment-Gebühren, den Betrieb von Shop und App, Routing-Tools, SaaS-Lizenzen sowie gegebenenfalls kundenseitige Schnittstellen. Für viele Modelle sind Richtwerte von etwa 0,50 bis 1,50 EUR pro Bestellung plausibel, bei komplexeren Technologie-Setups auch darüber. Der Effekt ist linear: Jeder zusätzliche Euro reduziert den EBIT unmittelbar um denselben Betrag.</div>
+            </div>
+            <div>
+              <label class="label-text" for="admin_cost">Admin (EUR)</label>
+              <input type="number" id="admin_cost" value="1.00" step="0.1" oninput="calculate()" />
+              <div class="explanation-box">Hier werden indirekte Gemeinkosten auf Bestellebene verteilt, etwa für Kundenservice, Verwaltung, Steuerung, Versicherungen und zentrale Funktionen. Als Modellannahme sind häufig etwa 0,80 bis 2,00 EUR pro Bestellung plausibel, abhängig von Reifegrad und Organisationsgröße. Dieser Kostenblock ist weniger sichtbar als Wareneinsatz oder Zustellung, kann jedoch im Grenzbereich entscheidend für die Profitabilität sein.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="lg:col-span-4">
+        <div class="sticky top-8 space-y-6">
+          <div class="bg-black text-white p-8 rounded-2xl shadow-2xl border-b-8 border-green-500">
+            <h3 class="metric-label text-green-500 mb-6 italic">EBIT pro Order</h3>
+            <div class="space-y-6">
+              <div class="flex justify-between items-center border-b border-gray-800 pb-3">
+                <span class="text-sm font-bold uppercase">Netto-Umsatz</span>
+                <span class="metric-value" id="res_net_rev">EUR 0.00</span>
+              </div>
+              <div class="flex justify-between items-center border-b border-gray-800 pb-3 text-red-400">
+                <span class="text-sm font-bold uppercase">Total Costs</span>
+                <span class="metric-value" id="res_var_cost">EUR 0.00</span>
+              </div>
+              <div class="pt-4">
+                <div class="text-5xl font-black mt-2" id="res_ebit">EUR 0.00</div>
+                <div class="text-sm font-bold mt-2 text-green-500 italic" id="res_margin_pct">Marge: 0%</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="bg-white p-6 rounded-xl shadow-md">
+            <h3 class="text-center text-xs uppercase font-bold text-gray-400 mb-4 tracking-widest">Kostenaufschlüsselung (EUR)</h3>
+            <div class="h-80 w-full relative">
+              <canvas id="costChart"></canvas>
+            </div>
+          </div>
+
+          <div class="bg-white p-6 rounded-xl shadow-md border-l-4 border-black">
+            <div class="flex items-center justify-between gap-4 mb-4">
+              <h3 class="text-xs uppercase font-bold text-gray-400 tracking-widest">Rechnung Schritt für Schritt</h3>
+              <span class="text-[10px] uppercase font-bold bg-gray-100 text-gray-600 px-2 py-1 rounded">Live</span>
+            </div>
+            <div id="calcSteps" class="space-y-3 text-sm"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    Chart.register(ChartDataLabels);
+
+    let currentStep = 1;
+    let myChart;
+
+    const DEFAULT_CITY_WAGE = 16.06;
+    const DEFAULT_COGS = 85;
+    const DEFAULT_PACKAGING = 0.39;
+
+    const fulfillmentModels = {
+      manual_store: {
+        label: 'Manuelles Store-Picking',
+        slopePer10: 2.75,
+        desc: 'Bei diesem Modell steigt der zusätzliche Kommissionieraufwand mit wachsendem Warenkorb am stärksten an. Als Richtwert werden etwa 2,5 bis 3,0 Minuten je zusätzlicher 10 EUR Warenkorb verwendet.'
+      },
+      dark_store: {
+        label: 'Dark-Store-ähnlich',
+        slopePer10: 2.05,
+        desc: 'Dieses Modell ist effizienter als das klassische Store-Picking und verwendet einen Richtwert von etwa 1,8 bis 2,3 Minuten je zusätzlicher 10 EUR Warenkorb.'
+      },
+      automated_fc: {
+        label: 'Stark automatisiertes FC',
+        slopePer10: 0.25,
+        desc: 'Bei diesem Modell steigt der Kommissionieraufwand mit zunehmendem Warenkorb nur gering an. Als Richtwert werden etwa 0,2 bis 0,3 Minuten je zusätzlicher 10 EUR Warenkorb verwendet.'
+      }
+    };
+
+    const cityData = {
+      berlin: {
+        wage: DEFAULT_CITY_WAGE,
+        dph: 2.6,
+        cogs: DEFAULT_COGS,
+        desc: 'Berlin weist eine hohe Kundendichte und vergleichsweise kurze Wege auf. Dies unterstützt die operative Effizienz, während der intensive Wettbewerb das ökonomische Potenzial zugleich begrenzen kann.'
+      },
+      munich: {
+        wage: DEFAULT_CITY_WAGE,
+        dph: 2.0,
+        cogs: DEFAULT_COGS,
+        desc: 'München ist durch hohe Standortkosten und eine dichte Nachfrage geprägt. Die Zustellproduktivität bleibt häufig auf solidem Niveau, wird jedoch durch Verkehrsbelastung, Parkdruck und komplexe Zustellsituationen begrenzt.'
+      },
+      hamburg: {
+        wage: DEFAULT_CITY_WAGE,
+        dph: 2.2,
+        cogs: DEFAULT_COGS,
+        desc: 'Hamburg ist durch Wasserlagen, Brücken und geografische Trennungen geprägt, was in der Zustelllogistik häufig zusätzliche Umwege und damit geringere Effizienz zur Folge hat.'
+      },
+      ruhr: {
+        wage: DEFAULT_CITY_WAGE,
+        dph: 1.8,
+        cogs: DEFAULT_COGS,
+        desc: 'Im Ruhrgebiet führen die stärkere Zersiedelung und längere Wege zwischen Stopps häufig zu einer geringeren Zustellproduktivität.'
+      }
+    };
+
+    function updateCityExplanation() {
+      const city = document.getElementById('wiz_city').value;
+      document.getElementById('city_explanation').innerText = cityData[city].desc;
+      if (document.getElementById('dph_explanation')) {
+        applyDeliveryModeDphAdjustment();
+      }
+    }
+
+    function updateFulfillmentExplanation() {
+      const modelKey = document.getElementById('fulfillment_model').value;
+      const model = fulfillmentModels[modelKey];
+      const box = document.getElementById('fulfillment_explanation');
+      box.innerText = `${model.desc} Für das Modell wird eine Baseline von 8,0 Minuten bei einem Warenkorb von 45 EUR zugrunde gelegt. Veränderungen des Warenkorbwerts wirken sich damit unmittelbar auf die aktive Kommissionierzeit aus.`;
+    }
+
+    function moveStep(delta) {
+      const nextStep = currentStep + delta;
+      if (nextStep < 1) return;
+      if (nextStep > 4) {
+        completeWizard();
+        return;
+      }
+
+      document.getElementById(`step${currentStep}`).classList.remove('active');
+      currentStep = nextStep;
+      document.getElementById(`step${currentStep}`).classList.add('active');
+
+      document.getElementById('stepIndicator').innerText = `Step ${currentStep}/4`;
+      document.getElementById('prevBtn').classList.toggle('hidden', currentStep === 1);
+      document.getElementById('nextBtn').innerText = currentStep === 4 ? 'Analyse starten' : 'Weiter';
+    }
+
+    function toggleFeeInput() {
+      const hasFeeSelect = document.getElementById('wiz_has_fee').value;
+      const input = document.getElementById('wiz_fee_val');
+
+      if (hasFeeSelect === 'no') {
+        input.value = '0.00';
+        input.style.opacity = '0.3';
+        input.disabled = true;
+      } else {
+        if (input.disabled || input.value === '0.00') {
+          input.value = '3.50';
+        }
+        input.style.opacity = '1';
+        input.disabled = false;
+      }
+    }
+
+    function toggleDeliveryModeFields() {
+      const mode = document.getElementById('delivery_mode').value;
+      const autonomousFields = document.getElementById('autonomousFields');
+      const humanFields = document.getElementById('humanFields');
+      const humanSocialField = document.getElementById('humanSocialField');
+
+      if (mode === 'autonomous') {
+        autonomousFields.classList.remove('hidden');
+        humanFields.classList.add('opacity-50');
+        humanSocialField.classList.add('opacity-50');
+      } else {
+        autonomousFields.classList.add('hidden');
+        humanFields.classList.remove('opacity-50');
+        humanSocialField.classList.remove('opacity-50');
+      }
+
+      applyDeliveryModeDphAdjustment();
+    }
+
+    function handleAovInput() {
+      updatePickingTimeFromInputs();
+      calculate();
+    }
+
+    function handleManualPickingTimeInput() {
+      const aov = parseFloat(document.getElementById('aov').value) || 45;
+      const input = document.getElementById('picking_time');
+      const modelKey = document.getElementById('fulfillment_model').value;
+      const slope = fulfillmentModels[modelKey].slopePer10;
+      const productMixAdj = parseFloat(input.dataset.productMixAdj || '0') || 0;
+      const basketAdj = ((aov - 45) / 10) * slope;
+      const currentActive = parseFloat(input.value) || 8;
+      input.dataset.base45 = (currentActive - basketAdj - productMixAdj).toFixed(2);
+      updatePickingTimeFromInputs();
+      calculate();
+    }
+
+    function updatePickingTimeFromInputs() {
+      const aov = parseFloat(document.getElementById('aov').value) || 0;
+      const input = document.getElementById('picking_time');
+      const modelKey = document.getElementById('fulfillment_model').value;
+      const model = fulfillmentModels[modelKey];
+      const base45 = parseFloat(input.dataset.base45 || '8') || 8;
+      const productMixAdj = parseFloat(input.dataset.productMixAdj || '0') || 0;
+      const basketAdj = ((aov - 45) / 10) * model.slopePer10;
+      const active = Math.max(base45 + basketAdj + productMixAdj, 0.5);
+      input.value = active.toFixed(1);
+
+      const pickingExplanation = document.getElementById('picking_explanation');
+      pickingExplanation.innerText = `Aktive Kommissionierzeit = ${base45.toFixed(1)} Min Baseline bei 45 EUR + ${basketAdj >= 0 ? '+' : ''}${basketAdj.toFixed(1)} Min Warenkorb-Effekt + ${productMixAdj >= 0 ? '+' : ''}${productMixAdj.toFixed(1)} Min Produktmix-Effekt = ${active.toFixed(1)} Min. Das gewählte Fulfillment-Modell ${model.label} bestimmt, wie stark die Kommissionierzeit bei größeren oder kleineren Warenkörben variiert.`;
+    }
+
+    function handleManualDphInput() {
+      const input = document.getElementById('dph');
+      input.dataset.baseDph = input.value;
+      applyDeliveryModeDphAdjustment();
+      calculate();
+    }
+
+    function applyDeliveryModeDphAdjustment() {
+      const mode = document.getElementById('delivery_mode').value;
+      const dphInput = document.getElementById('dph');
+      const dphExplanation = document.getElementById('dph_explanation');
+      const autonomousDeltaInput = document.getElementById('autonomous_dph_delta');
+      const selectedCity = document.getElementById('wiz_city')?.value || 'berlin';
+
+      if (!dphInput.dataset.baseDph) {
+        dphInput.dataset.baseDph = dphInput.value || '2.2';
+      }
+
+      const cityImpactText = {
+        berlin: 'Berlin weist eine hohe Kundendichte und kurze Wege auf, wodurch die DPH im Marktvergleich häufig höher ausfallen kann.',
+        munich: 'München verfügt über eine attraktive Nachfragestruktur, ist jedoch zugleich von höheren Standortkosten, Verkehrsbelastung und komplexen Zustellsituationen geprägt; die DPH bleibt daher oft solide, aber begrenzt.',
+        hamburg: 'Hamburg ist durch Wasserlagen, Brücken und geografische Trennungen geprägt, was zusätzliche Umwege verursachen und die DPH gegenüber besonders kompakten Städten reduzieren kann.',
+        ruhr: 'Im Ruhrgebiet reduziert die stärkere Zersiedelung mit längeren Fahrwegen zwischen den Stopps häufig die DPH, auch wenn einzelne Teilräume durchaus eine höhere Dichte aufweisen können.'
+      };
+
+      const baseDph = parseFloat(dphInput.dataset.baseDph) || 0;
+      const autonomousDelta = parseFloat(autonomousDeltaInput?.value) || 0;
+      const areaText = cityImpactText[selectedCity] || '';
+
+      if (mode === 'autonomous') {
+        const adjustedDph = Math.max(baseDph + autonomousDelta, 0.1);
+        dphInput.value = adjustedDph.toFixed(1);
+        dphExplanation.innerText = `Basis-DPH ${baseDph.toFixed(1)} im gewählten Liefergebiet. ${areaText} Im autonomen Modus ist der AV-DPH-Effekt standardmäßig auf 0,0 gesetzt, da derzeit kein pauschaler Produktivitätsgewinn belastbar unterstellt werden kann. Unter Berücksichtigung des aktuellen Delta-Werts von ${autonomousDelta >= 0 ? '+' : ''}${autonomousDelta.toFixed(1)} rechnet das Modell mit ${adjustedDph.toFixed(1)} Drops pro Stunde. Eine höhere DPH verteilt die stündlichen Zustellkosten auf mehr Bestellungen und verbessert damit das Ergebnis je Order.`;
+      } else {
+        dphInput.value = Math.max(baseDph, 0.1).toFixed(1);
+        dphExplanation.innerText = `Aktuelle Basis-DPH: ${Math.max(baseDph, 0.1).toFixed(1)}. ${areaText} Das Liefergebiet ist damit ein zentraler Treiber der Zustellkosten je Bestellung: kürzere Wege und mehr Stopps pro Tour verbessern EBIT und Marge, längere Wege wirken entsprechend belastend.`;
+      }
+    }
+
+    function completeWizard() {
+      const aov = parseFloat(document.getElementById('wiz_aov').value) || 0;
+      const fee = document.getElementById('wiz_has_fee').value === 'yes'
+        ? parseFloat(document.getElementById('wiz_fee_val').value) || 0
+        : 0;
+      const city = document.getElementById('wiz_city').value;
+      const frozen = document.getElementById('wiz_frozen').value === 'yes';
+      const drinks = document.getElementById('wiz_drinks').value === 'yes';
+      const deposit = document.getElementById('wiz_deposit').value === 'yes';
+
+      document.getElementById('aov').value = aov.toFixed(2);
+      document.getElementById('revenue_add').value = fee.toFixed(2);
+
+      const data = cityData[city];
+      document.getElementById('wage').value = data.wage.toFixed(2);
+
+      let baseDph = data.dph;
+      let finalCogs = data.cogs;
+      let finalPack = DEFAULT_PACKAGING;
+      let warehouseFixed = 1.2;
+      let productMixAdj = 0;
+
+      if (frozen) {
+        finalCogs += 2;
+        finalPack += 1.50;
+        productMixAdj += 2;
+        warehouseFixed += 0.50;
+      }
+
+      if (drinks) {
+        baseDph -= 0.4;
+        productMixAdj += 3;
+        warehouseFixed += 0.30;
+      }
+
+      if (deposit) {
+        baseDph -= 0.3;
+        productMixAdj += 1;
+      }
+
+      document.getElementById('dph').dataset.baseDph = Math.max(baseDph, 0.5).toFixed(1);
+      document.getElementById('dph').value = Math.max(baseDph, 0.5).toFixed(1);
+      document.getElementById('cogs_pct').value = finalCogs.toFixed(0);
+      document.getElementById('packaging').value = finalPack.toFixed(2);
+      document.getElementById('warehouse_fixed').value = warehouseFixed.toFixed(2);
+      document.getElementById('picking_time').dataset.base45 = '8';
+      document.getElementById('picking_time').dataset.productMixAdj = productMixAdj.toFixed(1);
+      document.getElementById('fulfillment_model').value = 'dark_store';
+
+      updateFulfillmentExplanation();
+      updatePickingTimeFromInputs();
+      applyDeliveryModeDphAdjustment();
+      document.getElementById('wizardOverlay').classList.add('hidden');
+      document.getElementById('mainContent').classList.remove('opacity-10', 'pointer-events-none');
+
+      calculate();
+    }
+
+    function formatEUR(value) {
+      return `EUR ${value.toFixed(2)}`;
+    }
+
+    function renderCalculationSteps(data) {
+      const deliveryModeLabel = data.delivery_mode === 'autonomous' ? 'Autonomes Fahrzeug' : 'Fahrer / Kurier';
+      const fulfillmentLabel = fulfillmentModels[data.fulfillment_model].label;
+
+      const chip = (label, value) => `
+        <span class="formula-chip">
+          <span>${label}</span>
+          <span class="formula-chip-value">${value}</span>
+        </span>
+      `;
+
+      const step = (kicker, title, line, result, impact, extraClass = '') => `
+        <div class="formula-step ${extraClass}">
+          <div class="formula-kicker">${kicker}</div>
+          <div class="formula-title">${title}</div>
+          <div class="formula-line">${line}</div>
+          <div class="formula-impact">${impact}</div>
+          <div class="formula-result">= ${result}</div>
+        </div>
+      `;
+
+      const sections = [
+        {
+          title: '1. Umsatzblock',
+          value: formatEUR(data.net_rev),
+          note: 'Diese Werte kommen direkt aus Bereich A links. Änderungen bei Warenkorb oder Liefergebühr erhöhen oder senken den Umsatz sofort.',
+          inputs: [
+            chip('Warenkorb', formatEUR(data.aov)),
+            chip('Liefergebühr', formatEUR(data.rev_add))
+          ],
+          steps: [
+            step(
+              'A1',
+              'Netto-Umsatz',
+              `${formatEUR(data.aov)} + ${formatEUR(data.rev_add)}`,
+              formatEUR(data.net_rev),
+              'Ein höherer Warenkorb oder eine höhere Liefergebühr verbessert den EBIT direkt, weil oben mehr Umsatz in die Rechnung einfließt.'
+            )
+          ]
+        },
+        {
+          title: '2. Waren- und Fulfillmentkosten',
+          value: formatEUR(data.cogs_val + data.fulfill_total),
+          note: 'Diese Kosten werden vor allem durch die Eingaben in A und B getrieben. Sie zeigen, wie teuer Produkt, Picking und Lagerbetrieb pro Order sind.',
+          inputs: [
+            chip('COGS', `${(data.cogs_pct * 100).toFixed(1)}%`),
+            chip('Verpackung', formatEUR(data.packaging)),
+            chip('Fulfillment', fulfillmentLabel),
+            chip('Picking-Zeit', `${data.picking_time.toFixed(1)} Min`),
+            chip('Lager-Overhead', formatEUR(data.warehouse_fixed))
+          ],
+          steps: [
+            step(
+              'A2',
+              'Wareneinsatz',
+              `${formatEUR(data.aov)} x ${(data.cogs_pct * 100).toFixed(1)}%`,
+              formatEUR(data.cogs_val),
+              'Wenn der COGS-Prozentsatz steigt, verschlechtert sich das Ergebnis stark, weil dieser Block meist der größte Kostenhebel ist.'
+            ),
+            step(
+              'B1',
+              'Aktive Picking-Zeit',
+              `${data.base_picking_45.toFixed(1)} Min Baseline + ${data.basket_picking_adjustment >= 0 ? '+' : ''}${data.basket_picking_adjustment.toFixed(1)} Min Warenkorb-Effekt + ${data.product_mix_picking_adjustment >= 0 ? '+' : ''}${data.product_mix_picking_adjustment.toFixed(1)} Min Produktmix`,
+              `${data.picking_time.toFixed(1)} Min`,
+              'Größere Warenkörbe erhöhen die Picking-Zeit abhängig vom gewählten Fulfillment-Modell. Produktmix-Effekte wie TK oder schwere Gebinde kommen zusätzlich oben drauf.'
+            ),
+            step(
+              'B2',
+              'Picking-Kosten',
+              `(${formatEUR(data.full_wage)} / 60) x ${data.picking_time.toFixed(1)} Min`,
+              formatEUR(data.picking_cost),
+              'Mehr Picking-Minuten erhöhen die Kosten linear. Größere oder komplexere Bestellungen schlagen hier direkt durch.'
+            ),
+            step(
+              'B3',
+              'Fulfillment gesamt',
+              `${formatEUR(data.packaging)} + ${formatEUR(data.picking_cost)} + ${formatEUR(data.warehouse_fixed)}`,
+              formatEUR(data.fulfill_total),
+              'Verpackung und Lager-Overhead wirken 1:1 auf EBIT. Schon kleine Änderungen in diesen Feldern verschieben das Ergebnis unmittelbar.'
+            )
+          ]
+        },
+        {
+          title: '3. Delivery-Kosten',
+          value: formatEUR(data.delivery_cost),
+          note: 'Dieser Block reagiert besonders stark auf die Eingaben in C links. Liefermodus, Lohnniveau und Drops pro Stunde bestimmen, wie teuer die letzte Meile pro Order wird.',
+          inputs: data.delivery_mode === 'autonomous'
+            ? [
+                chip('Modus', deliveryModeLabel),
+                chip('Basis-DPH', `${data.base_dph.toFixed(1)}`),
+                chip('AV-DPH-Effekt', `${data.autonomous_dph_delta >= 0 ? '+' : ''}${data.autonomous_dph_delta.toFixed(1)}`),
+                chip('Aktive DPH', `${data.dph.toFixed(1)}`),
+                chip('AV-Übergabe', formatEUR(data.handover_cost))
+              ]
+            : [
+                chip('Modus', deliveryModeLabel),
+                chip('Lohn', formatEUR(data.wage)),
+                chip('SV', `${(data.social_sec * 100).toFixed(1)}%`),
+                chip('Aktive DPH', `${data.dph.toFixed(1)}`)
+              ],
+          steps: data.delivery_mode === 'autonomous'
+            ? [
+                step(
+                  'C1',
+                  'Autonome Betriebsstundenkosten',
+                  `${formatEUR(data.remote_ops)} + ${formatEUR(data.autonomous_vehicle_cost)} + ${formatEUR(data.charging_cost)} + ${formatEUR(data.autonomous_software)} + ${formatEUR(data.autonomous_service_fee)}`,
+                  formatEUR(data.delivery_hourly_cost),
+                  'Im autonomen Modus entfallen Fahrerkosten, dafür entstehen neue Stundenkosten für Safety, Fahrzeug, Energie, Software und Service.'
+                ),
+                step(
+                  'C2',
+                  'Aktive Drops pro Stunde',
+                  `${data.base_dph.toFixed(1)} Basis-DPH ${data.autonomous_dph_delta >= 0 ? '+' : ''}${data.autonomous_dph_delta.toFixed(1)} AV-Effekt`,
+                  `${data.dph.toFixed(1)} Drops/h`,
+                  'Der AV-DPH-Effekt steht standardmäßig auf 0,0. Er bleibt als Szenario-Hebel offen, damit sich die Auswirkungen besser oder schlechterer Produktivität nachvollziehen lassen.'
+                ),
+                step(
+                  'C3',
+                  'Delivery-Kosten pro Order',
+                  `(${formatEUR(data.delivery_hourly_cost)} / ${data.dph.toFixed(1)} Drops/h) + ${formatEUR(data.handover_cost)}`,
+                  formatEUR(data.delivery_cost),
+                  'Die DPH ist hier der zentrale Hebel: mehr Stops pro Stunde senken die Kosten pro Order, Zusatzkosten wie Übergabe erhöhen sie.'
+                )
+              ]
+            : [
+                step(
+                  'C1',
+                  'Voller Stundenlohn inkl. SV',
+                  `${formatEUR(data.wage)} x (1 + ${(data.social_sec * 100).toFixed(1)}%)`,
+                  formatEUR(data.delivery_hourly_cost),
+                  'Steigen Lohn oder Arbeitgeberanteile, werden alle personalbasierten Zustellkosten unmittelbar teurer.'
+                ),
+                step(
+                  'C2',
+                  'Aktive Drops pro Stunde',
+                  `${data.base_dph.toFixed(1)} Basis-DPH ohne autonomen Effekt`,
+                  `${data.dph.toFixed(1)} Drops/h`,
+                  'Eine höhere DPH verbessert die Tourenproduktivität. Dadurch sinken die Stundenkosten je Bestellung deutlich.'
+                ),
+                step(
+                  'C3',
+                  'Delivery-Kosten pro Order',
+                  `${formatEUR(data.delivery_hourly_cost)} / ${data.dph.toFixed(1)} Drops/h`,
+                  formatEUR(data.delivery_cost),
+                  'Dieser Schritt zeigt direkt, wie sich Änderungen an Lohn, SV oder DPH links auf die Zustellkosten pro Order auswirken.'
+                )
+              ]
+        },
+        {
+          title: '4. Overhead & Ergebnis',
+          value: formatEUR(data.ebit),
+          note: 'Hier laufen die Eingaben aus D und alle vorherigen Blöcke zusammen. So wird sichtbar, welche Kombination am Ende profitabel ist.',
+          inputs: [
+            chip('CAC', formatEUR(data.cac)),
+            chip('IT & Payment', formatEUR(data.it_cost)),
+            chip('Admin', formatEUR(data.admin_cost))
+          ],
+          steps: [
+            step(
+              'D1',
+              'Overhead gesamt',
+              `${formatEUR(data.cac)} + ${formatEUR(data.it_cost)} + ${formatEUR(data.admin_cost)}`,
+              formatEUR(data.opex_total),
+              'Diese Werte aus Bereich D schlagen 1:1 auf das Ergebnis durch, ohne den operativen Prozess zu verbessern.'
+            ),
+            step(
+              'E1',
+              'Gesamtkosten',
+              `${formatEUR(data.cogs_val)} + ${formatEUR(data.fulfill_total)} + ${formatEUR(data.delivery_cost)} + ${formatEUR(data.opex_total)}`,
+              formatEUR(data.total_var_cost),
+              'Hier bündeln sich alle Kostenblöcke. Wenn einer der linken Eingabewerte steigt, erhöht sich dieser Wert direkt oder indirekt.'
+            ),
+            step(
+              'E2',
+              'EBIT pro Order',
+              `${formatEUR(data.net_rev)} - ${formatEUR(data.total_var_cost)}`,
+              formatEUR(data.ebit),
+              'Der EBIT zeigt den verbleibenden Ergebnisbeitrag pro Bestellung. Alles, was Umsatz erhöht oder Kosten senkt, verbessert diesen Wert.',
+              'formula-final'
+            ),
+            step(
+              'E3',
+              'EBIT-Marge',
+              `${formatEUR(data.ebit)} / ${formatEUR(data.aov)} x 100`,
+              `${data.margin.toFixed(1)}%`,
+              'Die Marge macht das Ergebnis relativ zum Warenkorb sichtbar und hilft, verschiedene Bestellszenarien besser zu vergleichen.'
+            )
+          ]
+        }
+      ];
+
+      document.getElementById('calcSteps').innerHTML = sections.map((section) => `
+        <div class="formula-section">
+          <div class="formula-section-header">
+            <div class="formula-section-title">${section.title}</div>
+            <div class="formula-section-value">${section.value}</div>
+          </div>
+          <div class="formula-section-note">${section.note}</div>
+          <div class="formula-inputs">${section.inputs.join('')}</div>
+          <div>${section.steps.join('')}</div>
+        </div>
+      `).join('');
+    }
+
+    function calculate() {
+      const aov = parseFloat(document.getElementById('aov').value) || 0;
+      const rev_add = parseFloat(document.getElementById('revenue_add').value) || 0;
+      const cogs_pct = (parseFloat(document.getElementById('cogs_pct').value) || 0) / 100;
+      const packaging = parseFloat(document.getElementById('packaging').value) || 0;
+      const picking_time = parseFloat(document.getElementById('picking_time').value) || 0;
+      const warehouse_fixed = parseFloat(document.getElementById('warehouse_fixed').value) || 0;
+      const fulfillment_model = document.getElementById('fulfillment_model').value;
+      const delivery_mode = document.getElementById('delivery_mode').value;
+      const wage = parseFloat(document.getElementById('wage').value) || 0;
+      const social_sec = (parseFloat(document.getElementById('social_sec').value) || 0) / 100;
+      const dph = Math.max(parseFloat(document.getElementById('dph').value) || 1, 0.1);
+      const base_dph = Math.max(parseFloat(document.getElementById('dph').dataset.baseDph || document.getElementById('dph').value) || 1, 0.1);
+      const autonomous_dph_delta = parseFloat(document.getElementById('autonomous_dph_delta')?.value) || 0;
+      const remote_ops = parseFloat(document.getElementById('remote_ops')?.value) || 0;
+      const autonomous_vehicle_cost = parseFloat(document.getElementById('autonomous_vehicle_cost')?.value) || 0;
+      const charging_cost = parseFloat(document.getElementById('charging_cost')?.value) || 0;
+      const autonomous_software = parseFloat(document.getElementById('autonomous_software')?.value) || 0;
+      const autonomous_service_fee = parseFloat(document.getElementById('autonomous_service_fee')?.value) || 0;
+      const handover_cost = parseFloat(document.getElementById('handover_cost')?.value) || 0;
+      const cac = parseFloat(document.getElementById('cac').value) || 0;
+      const it_cost = parseFloat(document.getElementById('it_cost').value) || 0;
+      const admin_cost = parseFloat(document.getElementById('admin_cost').value) || 0;
+      const base_picking_45 = parseFloat(document.getElementById('picking_time').dataset.base45 || '8') || 8;
+      const product_mix_picking_adjustment = parseFloat(document.getElementById('picking_time').dataset.productMixAdj || '0') || 0;
+      const basket_picking_adjustment = ((aov - 45) / 10) * fulfillmentModels[fulfillment_model].slopePer10;
+
+      const net_rev = aov + rev_add;
+      const cogs_val = aov * cogs_pct;
+      const full_wage = wage * (1 + social_sec);
+      const delivery_hourly_cost = delivery_mode === 'autonomous'
+        ? remote_ops + autonomous_vehicle_cost + charging_cost + autonomous_software + autonomous_service_fee
+        : full_wage;
+      const picking_cost = (full_wage / 60) * picking_time;
+      const delivery_cost = delivery_mode === 'autonomous'
+        ? (delivery_hourly_cost / dph) + handover_cost
+        : delivery_hourly_cost / dph;
+      const fulfill_total = packaging + picking_cost + warehouse_fixed;
+      const opex_total = cac + it_cost + admin_cost;
+      const total_var_cost = cogs_val + fulfill_total + delivery_cost + opex_total;
+
+      const ebit = net_rev - total_var_cost;
+      const margin = aov > 0 ? (ebit / aov) * 100 : 0;
+
+      document.getElementById('res_net_rev').innerText = formatEUR(net_rev);
+      document.getElementById('res_var_cost').innerText = formatEUR(total_var_cost);
+      document.getElementById('res_ebit').innerText = formatEUR(ebit);
+      document.getElementById('res_ebit').className = `text-5xl font-black mt-2 ${ebit > 0 ? 'text-green-500' : 'text-red-500'}`;
+      document.getElementById('res_margin_pct').innerText = `EBIT-Marge: ${margin.toFixed(1)}%`;
+
+      renderCalculationSteps({
+        aov,
+        rev_add,
+        cogs_pct,
+        packaging,
+        picking_time,
+        warehouse_fixed,
+        fulfillment_model,
+        delivery_mode,
+        wage,
+        social_sec,
+        dph,
+        base_dph,
+        autonomous_dph_delta,
+        remote_ops,
+        autonomous_vehicle_cost,
+        charging_cost,
+        autonomous_software,
+        autonomous_service_fee,
+        handover_cost,
+        cac,
+        it_cost,
+        admin_cost,
+        base_picking_45,
+        basket_picking_adjustment,
+        product_mix_picking_adjustment,
+        net_rev,
+        cogs_val,
+        full_wage,
+        delivery_hourly_cost,
+        picking_cost,
+        delivery_cost,
+        fulfill_total,
+        opex_total,
+        total_var_cost,
+        ebit,
+        margin
+      });
+
+      updateChart(cogs_val, fulfill_total, delivery_cost, opex_total);
+    }
+
+    function updateChart(cogs, fulfill, deliver, opex) {
+      const ctx = document.getElementById('costChart').getContext('2d');
+      const data = {
+        labels: ['Ware', 'Fulfillment', 'Delivery', 'Overhead'],
+        datasets: [{
+          data: [cogs, fulfill, deliver, opex],
+          backgroundColor: ['#000000', '#2cc700', '#949494', '#cccccc'],
+          borderWidth: 0,
+          borderRadius: 4
+        }]
+      };
+
+      if (myChart) {
+        myChart.data = data;
+        myChart.update();
+      } else {
+        myChart = new Chart(ctx, {
+          type: 'doughnut',
+          data,
+          options: {
+            cutout: '60%',
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                position: 'bottom',
+                labels: {
+                  font: { size: 10, weight: 'bold' },
+                  boxWidth: 10
+                }
+              },
+              tooltip: { enabled: true },
+              datalabels: {
+                color: (context) => context.dataset.backgroundColor[context.dataIndex] === '#000000' ? '#fff' : '#000',
+                font: { weight: 'bold', size: 11 },
+                formatter: (value) => `EUR ${value.toFixed(2)}`,
+                anchor: 'center',
+                align: 'center'
+              }
+            }
+          }
+        });
+      }
+    }
+
+    window.onload = () => {
+      const dphInput = document.getElementById('dph');
+      dphInput.dataset.baseDph = dphInput.value;
+      const pickingInput = document.getElementById('picking_time');
+      pickingInput.dataset.base45 = '8';
+      pickingInput.dataset.productMixAdj = '0';
+      toggleFeeInput();
+      updateCityExplanation();
+      updateFulfillmentExplanation();
+      updatePickingTimeFromInputs();
+      toggleDeliveryModeFields();
+      calculate();
+    };
+  </script>
+</body>
+</html>
